@@ -1,0 +1,92 @@
+{% extends 'base.html' %}
+{% block title %}
+    <title>登陆</title>
+    <style type="text/css">
+    body {
+        background: #323542;
+    }
+    </style>
+{% endblock %}
+{% block container %}
+    <!--主体-->
+    <div class="login-box">
+      <div class="lg-title">欢迎登陆积分商城</div>
+      <div class="login-form">
+        {#  如果登录是从其他页面跳转过来的，会带next参数，接到view中传过来的next_url,如果没有就是index#}
+        <form action="{% url 'accounts:user_login' %}?next={{ next_url }}" method="post">
+            {% csrf_token %}
+          <div class="login-user-name common-div">
+            <span class="eamil-icon common-icon">
+              <img src="/static/images/eamil.png" />
+            </span>
+            <input
+              type="text"
+              name="username"
+              value="{{ form.username.value|default_if_none:'' }}"
+              placeholder="请输入您的手机号"
+            />
+          </div>
+          {{ form.username.errors }}
+          <div class="login-user-pasw common-div">
+            <span class="pasw-icon common-icon">
+              <img src="/static/images/password.png" />
+            </span>
+            <input
+              type="password"
+              name="password"
+              value=""
+              placeholder="请输入您的密码"
+            />
+          </div>
+          {{ form.password.errors }}
+          <!--验证码-->
+          <div class="login-user-vcode common-div">
+            <div class="weui-cell__bd">
+              <input
+                  type="text"
+                  name="verify_code"
+                  value=""
+                  placeholder="请输入您的验证码"
+                />
+            </div>
+            <div class="weui-cell__ft">
+                <img class="verify-code-img"
+                     style="width: 100%; height: 100%;"
+                     src="{% url 'system:verify_code' %}"
+                    {#  data-src自定义属性，下面jq代码会用到，查看dom信息如：得到类名为username下#}
+                    {#   的自定义属性名为my-user的值#}
+                    {#   var user=$('#username').attr('my-user');#}
+                    {#	console.log('my-user:', user) #}
+                     data-src="{% url 'system:verify_code' %}" alt="验证码">
+            </div>
+          </div>
+            {# form.verify_code.errors这个报错username和password都有 #}
+          {{ form.verify_code.errors }}
+            {# 这个是在form表单中重写的clean方法对多个字段的验证 #}
+          {{ form.non_field_errors }}
+          <button class="login-btn common-div" type="submit">登录</button>
+          <a href="javascript:;" class="login-oth-btn common-div">微信登陆</a>
+          <a href="javascript:;" class="login-oth-btn common-div">QQ登陆</a>
+        </form>
+      </div>
+      <div class="forgets">
+        <a href="pwd_change.html">忘记密码？</a>
+        <a href="{% url 'accounts:user_register' %}">免费注册</a>
+      </div>
+    </div>
+{% endblock %}
+{% block footer %}
+{#    在点击验证码图片时，会访问验证码图片所在的网址sys/verify/code/。只有当网址发生变化     #}
+{#    时才会更新验证码图片，?t=会拼接到网址后面，通过new Date().getTime();     #}
+{#    取当前时间的毫秒数后拼接到等号后面，每将访问时，产生的毫秒数都会不同，     #}
+{#    相当于一个新的网址进行访问从而达到更新验证码的功能。     #}
+{#    $(this)表示当前通过$('.verify-code-img')得到的元素即img标签。$(this).attr('src' );     #}
+{#    获取节点属性名src的值     #}
+{#    data-src为自定义属性，存放真正需要显示的图片路径，当点击验证码图片时，     #}
+{#    用js取到该图片的data-src的值赋给src#}
+    <script>
+        $('.verify-code-img').click(function () {
+            $(this).attr('src', $(this).attr('data-src') + '?t=' + new Date().getTime())
+        })
+    </script>
+{% endblock %}
